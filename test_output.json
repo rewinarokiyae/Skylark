@@ -1,0 +1,18 @@
+{
+  "status": "success",
+  "intent": {
+    "metric": "custom",
+    "sector": "all",
+    "time_period": "all",
+    "board_source": "deals"
+  },
+  "metric_data": {
+    "Average Masked Deal Value": 15848214.47556
+  },
+  "traceability": {
+    "board": "Dynamic Multi-Board Analysis",
+    "records": 25,
+    "columns": []
+  },
+  "report": "# Average Masked Deal Value Analysis\nThe average masked deal value across all deals is **$15,848,214.48**.\nInsight: This average deal value suggests that the company is involved in significant transactions, potentially indicating a high-revenue business model. However, without additional context or comparison to industry benchmarks, it's challenging to determine if this average is exceptional or typical. Further analysis of individual deals and industry standards could provide more actionable insights.\nData Source Verification:\n```\nSource Board: Dynamic Multi-Board Analysis\nRow Count: 25\nColumns Used: Not specified\n```"
+}

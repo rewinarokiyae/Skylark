@@ -1,57 +1,52 @@
 import pandas as pd
 
-def calculate_pipeline_value(df, value_col='deal_value', status_col='status'):
-    """Calculate total value of active deals in the pipeline."""
-    if value_col not in df.columns or status_col not in df.columns:
+def total_pipeline_value(df):
+    """Sum of all deal values in the pipeline."""
+    if df.empty or 'Masked Deal value' not in df.columns:
         return 0
-    # Include only 'Open' or equivalent statuses
-    open_statuses = ['Open', 'Sales Qualified Leads', 'Proposal/Commercials Sent', 'Negotiations', 'Feasibility']
-    active_deals = df[df[status_col].str.contains('|'.join(open_statuses), case=False, na=False)]
-    return active_deals[value_col].sum()
+    return df['Masked Deal value'].sum()
 
-def revenue_by_sector(df, value_col='deal_value', sector_col='normalized_sector'):
-    """Calculate revenue distribution by sector."""
-    if value_col not in df.columns or sector_col not in df.columns:
-        return pd.Series()
-    return df.groupby(sector_col)[value_col].sum().sort_values(ascending=False)
+def revenue_by_sector(df):
+    """Breakdown of revenue (Amount) by sector from work orders."""
+    if df.empty or 'Amount in Rupees (Excl of GST) (Masked)' not in df.columns or 'Unified_Sector' not in df.columns:
+        return pd.Series(dtype=float)
+    return df.groupby('Unified_Sector')['Amount in Rupees (Excl of GST) (Masked)'].sum().sort_values(ascending=False)
 
-def deal_stage_distribution(df, stage_col='deal_stage'):
-    """Count deals by their current stage."""
-    if stage_col not in df.columns:
-        # Try finding a stage column
-        potential = [c for c in df.columns if 'stage' in c.lower()]
-        if potential: stage_col = potential[0]
-        else: return pd.Series()
-    return df[stage_col].value_counts()
-
-def work_order_completion_rate(df, status_col='execution_status'):
-    """Calculate percentage of completed work orders."""
-    if status_col not in df.columns:
-        return 0
-    total = len(df)
-    if total == 0: return 0
-    completed = len(df[df[status_col].str.contains('Completed|Executed', case=False, na=False)])
-    return (completed / total) * 100
-
-def detect_delayed_projects(df, end_date_col='expected_delivery', status_col='status'):
-    """Find projects that are past their expected delivery date but not completed."""
-    if end_date_col not in df.columns or status_col not in df.columns:
+def top_clients_with_largest_deals(df, top_n=10):
+    """Identify clients with the highest value deals."""
+    if df.empty or 'Masked Deal value' not in df.columns:
         return pd.DataFrame()
-    
+    return df.sort_values(by='Masked Deal value', ascending=False).head(top_n)
+
+def delayed_projects(df):
+    """Find work orders where execution status is not completed/executed and past delivery date."""
+    if df.empty: return df
     today = pd.Timestamp.now()
-    # Convert to datetime if not already
-    df[end_date_col] = pd.to_datetime(df[end_date_col], errors='coerce')
-    
+    if 'Execution Status' not in df.columns or 'Data Delivery Date' not in df.columns:
+        return pd.DataFrame()
+        
     delayed = df[
-        (df[end_date_col] < today) & 
-        (~df[status_col].str.contains('Completed|Executed|Done', case=False, na=False))
+        (df['Execution Status'] != 'Completed') & 
+        (df['Data Delivery Date'] < today)
     ]
     return delayed
 
-def get_operational_workload(df, sector_col='normalized_sector'):
-    """Calculate workload (count of active work orders) per sector."""
-    if sector_col not in df.columns:
-        return pd.Series()
-    # Filter for active WOs
-    active_wos = df[~df['execution_status'].str.contains('Completed|Executed', case=False, na=False)]
-    return active_wos.groupby(sector_col).size().sort_values(ascending=False)
+def work_order_completion_rate(df):
+    """Percentage of work orders marked as Completed."""
+    if df.empty or 'Execution Status' not in df.columns:
+        return 0
+    completed = len(df[df['Execution Status'] == 'Completed'])
+    return (completed / len(df)) * 100
+
+def active_work_orders(df):
+    """Count of work orders that are not yet Completed."""
+    if df.empty or 'Execution Status' not in df.columns:
+        return 0
+    active = float(len(df[df['Execution Status'] != 'Completed']))
+    return active
+
+def work_order_status_breakdown(df):
+    """Breakdown of work orders by their Execution Status."""
+    if df.empty or 'Execution Status' not in df.columns:
+        return pd.Series(dtype=int)
+    return df['Execution Status'].value_counts()

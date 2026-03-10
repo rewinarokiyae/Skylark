@@ -1,0 +1,71 @@
+{
+  "status": "success",
+  "intent": {
+    "metric": "top_clients",
+    "sector": "all",
+    "time_period": "all",
+    "board_source": "deals"
+  },
+  "metric_data": [
+    {
+      "Client Code": "COMPANY197",
+      "Sector/service": "Tender",
+      "Masked Deal value": 305850000.0
+    },
+    {
+      "Client Code": "COMPANY091",
+      "Sector/service": "Mining",
+      "Masked Deal value": 17616960.0
+    },
+    {
+      "Client Code": "COMPANY149",
+      "Sector/service": "DSP",
+      "Masked Deal value": 12234000.0
+    },
+    {
+      "Client Code": "COMPANY111",
+      "Sector/service": "Railways",
+      "Masked Deal value": 7832265.523
+    },
+    {
+      "Client Code": "COMPANY111",
+      "Sector/service": "Railways",
+      "Masked Deal value": 7832265.523
+    },
+    {
+      "Client Code": "COMPANY111",
+      "Sector/service": "Railways",
+      "Masked Deal value": 7832265.523
+    },
+    {
+      "Client Code": "COMPANY149",
+      "Sector/service": "DSP",
+      "Masked Deal value": 6117000.0
+    },
+    {
+      "Client Code": "COMPANY103",
+      "Sector/service": "DSP",
+      "Masked Deal value": 5505300.0
+    },
+    {
+      "Client Code": "COMPANY111",
+      "Sector/service": "Railways",
+      "Masked Deal value": 5235907.32
+    },
+    {
+      "Client Code": "COMPANY149",
+      "Sector/service": "DSP",
+      "Masked Deal value": 4281900.0
+    }
+  ],
+  "traceability": {
+    "board": "Deals Board",
+    "records": 25,
+    "columns": [
+      "Client Code",
+      "Sector/service",
+      "Masked Deal value"
+    ]
+  },
+  "report": "# Top Clients with Largest Deals\n| Rank | Client Code | Sector/Service | Total Deal Value |\n| --- | --- | --- | --- |\n| 1 | COMPANY197 | Tender | 305,850,000.0 |\n| 2 | COMPANY149 | DSP | 19,709,900.0 |\n| 3 | COMPANY111 | Railways | 22,742,338.373 |\n| 4 | COMPANY103 | DSP | 5,505,300.0 |\n| 5 | COMPANY091 | Mining | 17,616,960.0 |\n\nInsight: The top client with the largest deal is COMPANY197 from the Tender sector, with a deal value of $305,850,000. However, when considering the total deal value across all records for each client, COMPANY111 from the Railways sector takes the lead with a combined deal value of approximately $22.7 million, closely followed by COMPANY149 from the DSP sector with a total deal value of around $19.7 million. This suggests that while COMPANY197 has the single largest deal, COMPANY111 has a higher volume of significant deals. It's essential to prioritize relationships with these clients and explore opportunities to expand services within their respective sectors.\n\nData Source Verification:\n```\nSource Board: Deals Board\nRow Count: 25\nColumns Used: \n- Client Code\n- Sector/service\n- Masked Deal value\n```"
+}

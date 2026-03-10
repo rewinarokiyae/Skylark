@@ -14,23 +14,34 @@ st.set_page_config(
     layout="wide"
 )
 
-# Custom Styling
+# Custom Styling for Premium Look
 st.markdown("""
     <style>
-    .main {
-        background-color: #0e1117;
-        color: #ffffff;
+    .stApp {
+        background: radial-gradient(circle at 10% 20%, rgb(0, 0, 0) 0%, rgb(6, 6, 12) 90.2%);
     }
-    .stTextInput > div > div > input {
-        background-color: #262730;
-        color: white;
+    .main .block-container {
+        padding-top: 2rem;
+    }
+    h1, h2, h3 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        background: linear-gradient(90deg, #00d4ff 0%, #00ffaa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .stChatFloatingInputContainer {
+        bottom: 20px;
     }
     .insight-card {
-        background-color: #1e1e26;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #00d4ff;
-        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        padding: 24px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -44,57 +55,62 @@ agent = get_agent()
 
 # Sidebar
 with st.sidebar:
-    st.title("🦅 Skylark BI")
+    st.image("https://www.skylarkdrones.com/images/logo.png", width=200) # Placeholder for branding
+    st.title("BI Intelligence")
     st.markdown("---")
-    if st.button("Generate Leadership Summary"):
-        with st.spinner("Generating weekly summary..."):
+    if st.button("Generate Weekly Summary"):
+        with st.spinner("Analyzing operational trends..."):
             summary = agent.get_weekly_summary()
             st.session_state.leadership_summary = summary
 
-    st.markdown("### Data Sources")
-    st.info("Connected to Monday.com API")
-    st.info("Powered by Groq LLM")
+    st.markdown("### 🔌 Core Connectors")
+    st.success("Monday.com Pipeline")
+    st.success("Groq Intelligence (Llama 3.3)")
 
-# Main UI
-st.title("Skylark Drones — Business Intelligence Agent")
-st.markdown("---")
+# Main Header
+st.title("Skylark Drones — BI Agent")
+st.caption("Founder-level insights powered by real-time Monday.com data")
 
-# Leadership Summary Display
+# Summary Expandable
 if 'leadership_summary' in st.session_state:
-    with st.expander("📊 Weekly Leadership Summary", expanded=True):
+    with st.expander("📝 Strategic Leadership Summary", expanded=True):
         st.markdown(st.session_state.leadership_summary)
 
-# Chat Interface
+# Chat Hub
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Welcome back. I've refreshed the data from Monday.com boards. How can I help you analyze the pipeline or work orders today?"}
+    ]
 
 # Display conversation
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# User Input
-if prompt := st.chat_input("Ask a business question..."):
-    # Clear summary if new question asked (optional choice)
+# User Agent
+if prompt := st.chat_input("Ask about deals, revenue, or project delays..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Analyzing data and generating insights..."):
+        with st.spinner("Querying Monday.com & calculating metrics..."):
             result = agent.process_query(prompt)
             
             # Response formatting
-            response_text = result['insight']
-            
-            # Show Metrics Detail internally in an expander for transparency
-            with st.expander("View Analysis Details"):
-                st.json(result['intent'])
-                st.write("**Metric Data:**", result['metric_data'])
-                if result['quality_issues']:
-                    st.warning("**Data Quality Notes:**")
-                    for issue in result['quality_issues']:
-                        st.write(f"- {issue}")
+            if "error" in result:
+                response_text = result["error"]
+                st.error("Validation Failed: Data could not be retrieved from Monday.com.")
+                with st.expander("🛠️ Traceability Details"):
+                    st.write("**Traceability:**", result.get('traceability', {}))
+            else:
+                response_text = result['report']
+                
+                # Technical Debug/Details
+                with st.expander("🛠️ Analytics Breakdown"):
+                    st.write("**Intent Extraction:**", result.get('intent', {}))
+                    st.write("**Calculated Metric:**", result.get('metric_data', {}))
+                    st.write("**Traceability:**", result.get('traceability', {}))
             
             st.markdown(response_text)
             st.session_state.messages.append({"role": "assistant", "content": response_text})

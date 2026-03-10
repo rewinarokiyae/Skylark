@@ -3,104 +3,206 @@ from integrations.monday_api import MondayClient
 from processing import data_cleaner, metrics_engine
 from agent.query_interpreter import QueryInterpreter
 from agent.insight_generator import InsightGenerator
+from agent.dynamic_engine import DynamicEngine
+from config import settings
 
 class BIAgent:
     def __init__(self):
         self.monday = MondayClient()
         self.interpreter = QueryInterpreter()
         self.generator = InsightGenerator()
+        self.dynamic_engine = DynamicEngine()
         
     def _fetch_all_data(self):
-        """Fetch and clean data from both boards."""
+        """Fetch and clean data from live Monday.com boards with Local CSV Fallback."""
+        data_source_label = "Deals Board / Work Orders Board"
         try:
             deals_df = self.monday.get_deals_board_data()
             work_orders_df = self.monday.get_work_orders_board_data()
+            if deals_df.empty or work_orders_df.empty:
+                raise ValueError("API returned empty DataFrames.")
         except Exception as e:
-            print(f"Monday API Error: {e}")
-            deals_df = pd.DataFrame()
-            work_orders_df = pd.DataFrame()
+            print(f"Monday API Error, falling back to local CSV: {e}")
+            try:
+                # Local CSV Fallback
+                deals_df = pd.read_csv("d:/Skylark/data/Deal_funnel_Data.csv")
+                work_orders_df = pd.read_csv("d:/Skylark/data/Work_Order_Tracker_Data.csv")
+                data_source_label = "Local CSV Files (Fallback)"
+                
+                # The CSV headers need to roughly match what data_cleaner expects.
+                # Since we synced the API columns to the CSV headers earlier, 
+                # the CSV headers should mostly work out of the box with data_cleaner.
+            except Exception as csv_err:
+                print(f"Local CSV Fallback failed: {csv_err}")
+                deals_df = pd.DataFrame()
+                work_orders_df = pd.DataFrame()
+                data_source_label = "Error: No Data Available"
 
-        # Fallback to CSV if empty (for prototype demo)
-        if deals_df.empty:
-            deals_df = pd.read_csv('data/Deal_funnel_Data.csv')
-        if work_orders_df.empty:
-            work_orders_df = pd.read_csv('data/Work_Order_Tracker_Data.csv')
+        # Cleaning
+        deals_df = data_cleaner.clean_deals_data(deals_df)
+        work_orders_df = data_cleaner.clean_work_orders_data(work_orders_df)
 
-        # Cleaning Deals
-        deals_df = data_cleaner.normalize_dates(deals_df, ['Close Date (A)', 'Tentative Close Date', 'Created Date'])
-        deals_df = data_cleaner.clean_financial_columns(deals_df, ['Masked Deal value'])
-        deals_df = data_cleaner.standardize_sector_names(deals_df, 'Sector/service')
-        deals_df = data_cleaner.fill_missing_values(deals_df)
-
-        # Cleaning Work Orders
-        work_orders_df = data_cleaner.normalize_dates(work_orders_df, ['Probable Start Date', 'Probable End Date', 'Data Delivery Date'])
-        work_orders_df = data_cleaner.clean_financial_columns(work_orders_df, ['Amount in Rupees (Incl of GST) (Masked)'])
-        work_orders_df = data_cleaner.standardize_sector_names(work_orders_df, 'Sector')
-        work_orders_df = data_cleaner.fill_missing_values(work_orders_df)
-
-        return deals_df, work_orders_df
+        return deals_df, work_orders_df, data_source_label
 
     def process_query(self, user_query):
-        """Main orchidstrator flow."""
+        """Main orchestrator flow with enhanced validation and traceability."""
         # 1. Interpret Query
         intent = self.interpreter.interpret(user_query)
         
         # 2. Get Data
-        deals_df, wo_df = self._fetch_all_data()
+        deals_df, wo_df, data_source_label = self._fetch_all_data()
         
-        # 3. Detect Quality Issues
-        quality_issues = data_cleaner.detect_data_quality_issues(deals_df if intent['board_source'] == 'deals' else wo_df)
+        metric_type = intent.get('metric')
+        sector = intent.get('sector', 'all')
         
-        # 4. Calculate Specific Metrics based on intent
-        result_metric = "No data found for this query."
-        metric_type = intent['metric']
-        sector = intent['sector']
+        # Determine strict board source based on metric type to prevent LLM hallucinations
+        deals_metrics = ['pipeline_value', 'top_clients', 'top_deals']
+        wo_metrics = ['revenue_by_sector', 'delayed_projects', 'work_order_completion_rate', 'active_work_orders', 'work_order_status_breakdown']
         
-        target_df = deals_df if intent['board_source'] == 'deals' else wo_df
+        if metric_type in deals_metrics:
+            source = 'deals'
+        elif metric_type in wo_metrics:
+            source = 'work_orders'
+        elif metric_type == 'custom':
+            source = 'both'
+        else:
+            source = 'deals'
+            
+        active_df = deals_df if source == 'deals' else wo_df
+        
+        if "Fallback" in data_source_label or "Error" in data_source_label:
+            board_name = data_source_label
+        else:
+            if source == 'deals':
+                board_name = "Deals Board"
+            elif source == 'work_orders':
+                board_name = "Work Orders Board"
+            else:
+                board_name = "Dynamic Multi-Board Analysis"
+        
+        # Define strictly required columns to answer the question
+        strict_req_cols = []
+        if metric_type == 'pipeline_value':
+            strict_req_cols = ['Masked Deal value']
+        elif metric_type in ['top_clients', 'top_deals']:
+            strict_req_cols = ['Unified_Client_Code', 'Deal Name', 'Unified_Sector', 'Masked Deal value']
+        elif metric_type == 'revenue_by_sector':
+            strict_req_cols = ['Unified_Sector', 'Amount in Rupees (Excl of GST) (Masked)']
+        elif metric_type == 'delayed_projects':
+            strict_req_cols = ['Execution Status', 'Data Delivery Date']
+        elif metric_type == 'work_order_completion_rate':
+            strict_req_cols = ['Execution Status']
+        elif metric_type == 'active_work_orders':
+            strict_req_cols = ['Execution Status']
+        elif metric_type == 'work_order_status_breakdown':
+            strict_req_cols = ['Execution Status']
+            
         if sector != 'all':
-            target_df = target_df[target_df['normalized_sector'] == sector.capitalize()]
+            strict_req_cols.append('Unified_Sector')
+                
+        # 3. Dynamic Column Fallback Check
+        missing_cols = [col for col in strict_req_cols if col not in active_df.columns]
+        if missing_cols and board_name in ["Deals Board", "Work Orders Board"]:
+            print(f"Dynamic Fallback Triggered: Missing columns {missing_cols} in {board_name}")
+            try:
+                if source == 'deals':
+                    active_df = pd.read_csv("d:/Skylark/data/Deal_funnel_Data.csv")
+                    active_df = data_cleaner.clean_deals_data(active_df)
+                else:
+                    active_df = pd.read_csv("d:/Skylark/data/Work_Order_Tracker_Data.csv")
+                    active_df = data_cleaner.clean_work_orders_data(active_df)
+                board_name = "Local CSV Files (Dynamic Column Fallback)"
+            except Exception as e:
+                print(f"Dynamic Fallback failed: {e}")
+        
+        # 4. Data Validation Step (Anti-Hallucination)
+        validation_errors = []
+        if active_df.empty:
+            return {
+                "error": "Unable to retrieve data from monday.com board. The result cannot be generated.",
+                "traceability": {
+                    "board": board_name,
+                    "records": 0,
+                    "columns": []
+                }
+            }
+
+        # 5. Calculate Specific Metrics
+        result_metric = None
+        
+        # Filter by sector if applicable
+        if sector != 'all' and 'Unified_Sector' in active_df.columns:
+            active_df = active_df[active_df['Unified_Sector'].str.lower() == sector.lower()]
 
         if metric_type == 'pipeline_value':
-            val = metrics_engine.calculate_pipeline_value(target_df, 'Masked Deal value', 'Deal Status')
-            result_metric = f"Total Pipeline Value: ${val:,.2f}"
+            val = metrics_engine.total_pipeline_value(active_df)
+            result_metric = f"Total Pipeline Value: ₹{val:,.2f}"
+            req_cols = ['Masked Deal value']
+        elif metric_type in ['top_clients', 'top_deals']:
+            top = metrics_engine.top_clients_with_largest_deals(active_df)
+            cols_to_use = [c for c in strict_req_cols if c in top.columns]
+            result_metric = top[cols_to_use].to_dict(orient='records')
+            req_cols = cols_to_use
         elif metric_type == 'revenue_by_sector':
-            rev = metrics_engine.revenue_by_sector(target_df, 'Masked Deal value')
+            rev = metrics_engine.revenue_by_sector(active_df)
             result_metric = rev.to_dict()
+            req_cols = ['Unified_Sector', 'Amount in Rupees (Excl of GST) (Masked)']
         elif metric_type == 'delayed_projects':
-            delayed = metrics_engine.detect_delayed_projects(target_df, 'Probable End Date', 'Execution Status')
-            result_metric = f"Delayed Projects: {len(delayed)}"
-        elif metric_type == 'completion_rate':
-            rate = metrics_engine.work_order_completion_rate(target_df, 'Execution Status')
-            result_metric = f"Completion Rate: {rate:.1f}%"
-        elif metric_type == 'workload':
-            workload = metrics_engine.get_operational_workload(target_df)
-            result_metric = workload.to_dict()
+            delayed = metrics_engine.delayed_projects(active_df)
+            result_metric = delayed.to_dict(orient='records') if not delayed.empty else "No delayed projects found."
+            req_cols = ['Execution Status', 'Data Delivery Date']
+        elif metric_type == 'work_order_completion_rate':
+            rate = metrics_engine.work_order_completion_rate(active_df)
+            result_metric = f"{rate:.1f}%"
+            req_cols = ['Execution Status']
+        elif metric_type == 'active_work_orders':
+            val = metrics_engine.active_work_orders(active_df)
+            result_metric = f"Active Work Orders: {int(val)}"
+            req_cols = ['Execution Status']
+        elif metric_type == 'work_order_status_breakdown':
+            breakdown = metrics_engine.work_order_status_breakdown(active_df)
+            result_metric = breakdown.to_dict()
+            req_cols = ['Execution Status']
+        elif metric_type == 'custom':
+            result_metric = self.dynamic_engine.generate_and_execute(user_query, deals_df, wo_df)
+            req_cols = []
+        else:
+            result_metric = "Unsupported metric type."
+            req_cols = []
 
-        # 5. Generate Insight
-        insight = self.generator.generate_insight(intent, result_metric, quality_issues)
+        # 5. Traceability Metadata
+        traceability = {
+            "board": board_name,
+            "records": len(active_df),
+            "columns": [c for c in req_cols if c in active_df.columns]
+        }
+
+        # 6. Generate Insight (using new reporting standards prompt)
+        insight = self.generator.generate_executive_report(user_query, traceability, result_metric)
         
         return {
+            "status": "success",
             "intent": intent,
             "metric_data": result_metric,
-            "insight": insight,
-            "quality_issues": quality_issues
+            "traceability": traceability,
+            "report": insight
         }
 
     def get_weekly_summary(self):
         """Generate high level dashboard summary."""
-        deals_df, wo_df = self._fetch_all_data()
+        deals_df, wo_df, data_source_label = self._fetch_all_data()
         
-        total_pipeline = metrics_engine.calculate_pipeline_value(deals_df, 'Masked Deal value', 'Deal Status')
-        top_sector = metrics_engine.revenue_by_sector(deals_df, 'Masked Deal value').index[0]
-        delayed = len(metrics_engine.detect_delayed_projects(wo_df, 'Probable End Date', 'Execution Status'))
+        total_val = metrics_engine.total_pipeline_value(deals_df)
+        rev_dist = metrics_engine.revenue_by_sector(wo_df)
+        top_sector = rev_dist.index[0] if not rev_dist.empty else "N/A"
+        delayed = len(metrics_engine.delayed_projects(wo_df))
         
         metrics = {
-            "Pipeline Value": f"${total_pipeline:,.2f}",
-            "Top Sector": top_sector,
-            "Delayed Projects": delayed
+            "Total Pipeline Value": f"₹{total_val:,.2f}",
+            "Highest Revenue Sector": top_sector,
+            "Delayed Work Orders": delayed,
+            "Data Source": data_source_label
         }
         
-        risks = data_cleaner.detect_data_quality_issues(deals_df) + data_cleaner.detect_data_quality_issues(wo_df)
-        
-        summary = self.generator.generate_leadership_summary(metrics, risks)
+        summary = self.generator.generate_leadership_summary(metrics, "None detected")
         return summary

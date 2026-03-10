@@ -1,0 +1,7 @@
+CSV COMMON: set()
+
+API DEALS: ['Item ID', 'Item Name', 'Person', 'Deal Status', 'Close Date (A)', 'Owner code', 'Masked Deal value', 'Closure Probability', 'Client Code', 'Deal Stage', 'Product deal', 'Tentative Close Date', 'Numbers 1', 'Created Date', 'Text 4', 'Text 5', 'Sector/service', 'Date 3']
+
+API WO: ['Item ID', 'Item Name', 'Person', 'Status', 'Date', 'Customer Name Code', 'Serial #', 'Nature of Work', 'Last executed month of recurring project', 'Execution Status', 'Data Delivery Date', 'Date of PO/LOI', 'Document Type', 'Probable Start Date', 'Probable End Date', 'BD/KAM Personnel code', 'Sector', 'Type of Work', 'Is any Skylark software platform part of the client deliverables in this deal?', 'Last invoice date', 'latest invoice no.', 'Numbers', 'Amount in Rupees (Excl of GST) (Masked)', 'Amount in Rupees (Incl of GST) (Masked)', 'Numbers 3', 'Numbers 4', 'Numbers 5', 'Amount to be billed in Rs. (Exl. of GST) (Masked)', 'Amount to be billed in Rs. (Incl. of GST) (Masked)', 'Status 2', 'Numbers 8', 'Quantity by Ops', 'Numbers 9', 'Status 3', 'Text 10', 'Text 11', 'Text 12', 'Status 4', 'Status 5', 'Date 6', 'Billing Status']
+
+API COMMON: {'Person', 'Item ID', 'Item Name'}

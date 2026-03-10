@@ -1,0 +1,315 @@
+{
+  "5027111612": {
+    "data": {
+      "boards": [
+        {
+          "name": "Deals",
+          "columns": [
+            {
+              "id": "name",
+              "title": "Deal Name",
+              "type": "name"
+            },
+            {
+              "id": "person",
+              "title": "Person",
+              "type": "people"
+            },
+            {
+              "id": "status",
+              "title": "Deal Status",
+              "type": "status"
+            },
+            {
+              "id": "date4",
+              "title": "Close Date (A)",
+              "type": "date"
+            },
+            {
+              "id": "text_mm1a61xw",
+              "title": "Owner code",
+              "type": "text"
+            },
+            {
+              "id": "numeric_mm1aqm85",
+              "title": "Masked Deal value",
+              "type": "numbers"
+            },
+            {
+              "id": "dropdown_mm1ah7tb",
+              "title": "Closure Probability",
+              "type": "dropdown"
+            },
+            {
+              "id": "text_mm1aykvb",
+              "title": "Client Code",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1aj877",
+              "title": "Deal Stage",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1aatyg",
+              "title": "Product deal",
+              "type": "text"
+            },
+            {
+              "id": "date_mm1awe5n",
+              "title": "Tentative Close Date",
+              "type": "date"
+            },
+            {
+              "id": "numeric_mm1ar7fj",
+              "title": "Numbers 1",
+              "type": "numbers"
+            },
+            {
+              "id": "date_mm1ac61q",
+              "title": "Created Date",
+              "type": "date"
+            },
+            {
+              "id": "text_mm1a9kan",
+              "title": "Text 4",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1ak2px",
+              "title": "Text 5",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1a3vjn",
+              "title": "Sector/service",
+              "type": "text"
+            },
+            {
+              "id": "date_mm1abrfq",
+              "title": "Date 3",
+              "type": "date"
+            }
+          ]
+        }
+      ]
+    },
+    "extensions": {
+      "request_id": "2b149a1b-5fc5-9032-a4ce-4637d322d601"
+    }
+  },
+  "5027112113": {
+    "data": {
+      "boards": [
+        {
+          "name": "Work Orders",
+          "columns": [
+            {
+              "id": "name",
+              "title": "Deal name masked",
+              "type": "name"
+            },
+            {
+              "id": "person",
+              "title": "Person",
+              "type": "people"
+            },
+            {
+              "id": "status",
+              "title": "Status",
+              "type": "status"
+            },
+            {
+              "id": "date4",
+              "title": "Date",
+              "type": "date"
+            },
+            {
+              "id": "text_mm1apssz",
+              "title": "Customer Name Code",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1ax63n",
+              "title": "Serial #",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1acate",
+              "title": "Nature of Work",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1af65j",
+              "title": "Last executed month of recurring project",
+              "type": "text"
+            },
+            {
+              "id": "color_mm1a6fyb",
+              "title": "Execution Status",
+              "type": "status"
+            },
+            {
+              "id": "date_mm1a8adb",
+              "title": "Data Delivery Date",
+              "type": "date"
+            },
+            {
+              "id": "date_mm1aye4k",
+              "title": "Date of PO/LOI",
+              "type": "date"
+            },
+            {
+              "id": "text_mm1atzg9",
+              "title": "Document Type",
+              "type": "text"
+            },
+            {
+              "id": "date_mm1ae33g",
+              "title": "Probable Start Date",
+              "type": "date"
+            },
+            {
+              "id": "date_mm1a31qc",
+              "title": "Probable End Date",
+              "type": "date"
+            },
+            {
+              "id": "text_mm1acajp",
+              "title": "BD/KAM Personnel code",
+              "type": "text"
+            },
+            {
+              "id": "dropdown_mm1afvrf",
+              "title": "Sector",
+              "type": "dropdown"
+            },
+            {
+              "id": "text_mm1aq05p",
+              "title": "Type of Work",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1a8jpr",
+              "title": "Is any Skylark software platform part of the client deliverables in this deal?",
+              "type": "text"
+            },
+            {
+              "id": "date_mm1a7wgk",
+              "title": "Last invoice date",
+              "type": "date"
+            },
+            {
+              "id": "text_mm1avew2",
+              "title": "latest invoice no.",
+              "type": "text"
+            },
+            {
+              "id": "numeric_mm1amh3z",
+              "title": "Numbers",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1a280k",
+              "title": "Amount in Rupees (Excl of GST) (Masked)",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1aryxb",
+              "title": "Amount in Rupees (Incl of GST) (Masked)",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1ae765",
+              "title": "Numbers 3",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1atbrf",
+              "title": "Numbers 4",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1agdpf",
+              "title": "Numbers 5",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1ae8by",
+              "title": "Amount to be billed in Rs. (Exl. of GST) (Masked)",
+              "type": "numbers"
+            },
+            {
+              "id": "numeric_mm1avdsd",
+              "title": "Amount to be billed in Rs. (Incl. of GST) (Masked)",
+              "type": "numbers"
+            },
+            {
+              "id": "color_mm1apec6",
+              "title": "Status 2",
+              "type": "status"
+            },
+            {
+              "id": "numeric_mm1an1kg",
+              "title": "Numbers 8",
+              "type": "numbers"
+            },
+            {
+              "id": "text_mm1a1wxx",
+              "title": "Quantity by Ops",
+              "type": "text"
+            },
+            {
+              "id": "numeric_mm1a5q25",
+              "title": "Numbers 9",
+              "type": "numbers"
+            },
+            {
+              "id": "color_mm1a39fy",
+              "title": "Status 3",
+              "type": "status"
+            },
+            {
+              "id": "text_mm1a146z",
+              "title": "Text 10",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1af09",
+              "title": "Text 11",
+              "type": "text"
+            },
+            {
+              "id": "text_mm1arzc1",
+              "title": "Text 12",
+              "type": "text"
+            },
+            {
+              "id": "color_mm1aze81",
+              "title": "Status 4",
+              "type": "status"
+            },
+            {
+              "id": "color_mm1a1ywy",
+              "title": "Status 5",
+              "type": "status"
+            },
+            {
+              "id": "date_mm1afm74",
+              "title": "Date 6",
+              "type": "date"
+            },
+            {
+              "id": "color_mm1agnn8",
+              "title": "Billing Status",
+              "type": "status"
+            }
+          ]
+        }
+      ]
+    },
+    "extensions": {
+      "request_id": "9b76af4e-86a0-9f4d-a4a2-81cb83ead8fb"
+    }
+  }
+}
